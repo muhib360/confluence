@@ -32,7 +32,7 @@ db.exec(`
 `);
 
 export function seedDummyData() {
-    const check = db.prepare('SELECT COUNT(*) as count FROM users WHERE id LIKE "dummy_%"').get() as { count: number };
+    const check = db.prepare(`SELECT COUNT(*) as count FROM users WHERE id LIKE 'dummy_%'`).get() as { count: number };
     
     if (check.count === 0) {
         console.log('Seeding dummy profiles...');
