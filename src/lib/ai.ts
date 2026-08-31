@@ -1,8 +1,4 @@
 import OpenAI from 'openai';
-import { pipeline, env } from '@huggingface/transformers';
-
-// Ensure it downloads models and doesn't try to use restricted local paths
-env.allowLocalModels = false;
 
 const openai = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
@@ -13,54 +9,58 @@ const openai = new OpenAI({
     }
 });
 
-// We use the free gemini model provided via OpenRouter
-const GENERATIVE_MODEL = 'google/gemini-2.5-flash-free'; 
+// Free models provided via OpenRouter
+const GENERATIVE_MODEL = 'nvidia/nemotron-3.5-lightning:free';
 
-let embeddingPipeline: any = null;
-
-export async function getEmbedding(text: string): Promise<number[]> {
-    if (!embeddingPipeline) {
-        embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-    }
-    const output = await embeddingPipeline(text, { pooling: 'mean', normalize: true });
-    return Array.from(output.data);
-}
-
-export async function extractBioSignal(bio: string) {
+export async function generateFollowUpQuestion(initialPrompt: string): Promise<string> {
     const prompt = `
-    Analyze the following user bio and extract structured signal.
-    Return ONLY a JSON object with these exact keys:
-    - "topic": A short 3-6 word summary of their core intellectual interest.
-    - "stance": A short sentence summarizing their personal opinion/stance on the topic.
-    - "preference": Return strictly "agree" if they want to connect with someone similar, or "argue" if they want to debate/be challenged.
+    You are an intellectual conversationalist helping a user write a bio for a platform called "Confluence", 
+    which focuses on "Quiet, intentional conversations" and "Modern Editorial" style.
     
-    Bio: "${bio}"
+    The user was asked: "What brings you here? What topics do you want to explore?"
+    Their answer: "${initialPrompt}"
+    
+    Generate a single, thoughtful follow-up question to dig deeper into their interest. 
+    Make it sound human, curious, and intellectual, but keep it concise (1 sentence).
+    Return ONLY the question text.
     `;
 
     const response = await openai.chat.completions.create({
         model: GENERATIVE_MODEL,
-        response_format: { type: 'json_object' },
         messages: [{ role: 'user', content: prompt }]
     });
 
-    try {
-        const content = response.choices[0].message.content;
-        return JSON.parse(content || '{}');
-    } catch (e) {
-        console.error("Failed to parse LLM signal", e);
-        return { topic: 'Unknown topic', stance: 'Unknown', preference: 'agree' };
-    }
+    return response.choices[0]?.message?.content?.trim() || "What specific aspect of that fascinates you the most?";
 }
 
-export async function generateMatchContext(user1Bio: string, user2Bio: string) {
+export async function compileBio(initialPrompt: string, followUpAnswer: string): Promise<string> {
     const prompt = `
-    Two users have been matched for a 1:1 conversation based on their bios.
-    User 1: "${user1Bio}"
-    User 2: "${user2Bio}"
+    You are helping a user write a bio for a platform called "Confluence", which focuses on deep, intentional conversations.
+    The tone should be "Quietly Intellectual" - like a high-end editorial publication or a literary journal. 
+    It should be concise, around 2-3 sentences.
+    
+    User's initial answer about what brings them here: "${initialPrompt}"
+    User's answer to a follow up question: "${followUpAnswer}"
+    
+    Compile this into a cohesive, first-person bio.
+    Return ONLY the bio text, no quotes or intro.
+    `;
 
-    Return ONLY a JSON object with two keys:
-    - "reason": A 1-2 sentence fun explanation of why they were matched (highlighting similarities or interesting contrasts).
-    - "icebreaker": A thoughtful, specific question to kick off their conversation based on their overlapping interests.
+    const response = await openai.chat.completions.create({
+        model: GENERATIVE_MODEL,
+        messages: [{ role: 'user', content: prompt }]
+    });
+
+    return response.choices[0]?.message?.content?.trim() || initialPrompt;
+}
+
+export async function generateMatchContext(topic: string) {
+    const prompt = `
+    Two users have been matched for a 1:1 conversation based on their shared interest in the topic: "${topic}".
+
+    Return a JSON object with two keys:
+    - "reason": A 1-2 sentence fun explanation of why they were matched (highlighting the topic).
+    - "icebreaker": A thoughtful, specific question to kick off their conversation based on this topic.
     `;
 
     const response = await openai.chat.completions.create({

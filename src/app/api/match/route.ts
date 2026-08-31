@@ -1,0 +1,58 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { generateMatchContext } from '@/lib/ai';
+
+export async function POST(req: Request) {
+    try {
+        const { topic } = await req.json();
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        // Simulate search delay
+        await new Promise(r => setTimeout(r, 1500));
+
+        // Find a match (for demo: pick any profile that isn't the user)
+        // In a real app, this would match based on embeddings or queues
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, bio')
+            .neq('id', user.id)
+            .limit(50);
+            
+        if (!profiles || profiles.length === 0) {
+            // Queue state
+            await supabase.from('queues').insert({ user_id: user.id, topic, status: 'searching' });
+            return NextResponse.json({ queued: true });
+        }
+
+        // Pick random profile
+        const matchedProfile = profiles[Math.floor(Math.random() * profiles.length)];
+
+        // Generate context
+        const context = await generateMatchContext(topic);
+
+        // Create match
+        const { data: match, error } = await supabase
+            .from('matches')
+            .insert({
+                user1_id: user.id,
+                user2_id: matchedProfile.id,
+                topic,
+                reasoning: context.reason,
+                icebreaker: context.icebreaker,
+                status: 'pending'
+            })
+            .select()
+            .single();
+
+        if (error || !match) throw error;
+
+        return NextResponse.json({ matchId: match.id });
+
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: 'Match failed' }, { status: 500 });
+    }
+}
