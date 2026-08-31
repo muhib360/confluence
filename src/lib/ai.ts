@@ -10,7 +10,7 @@ const openai = new OpenAI({
 });
 
 // Free models provided via OpenRouter
-const GENERATIVE_MODEL = 'nvidia/nemotron-3.5-lightning:free';
+const GENERATIVE_MODEL = 'openrouter/free';
 
 export async function generateFollowUpQuestion(initialPrompt: string): Promise<string> {
     const prompt = `
