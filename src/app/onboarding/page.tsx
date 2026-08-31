@@ -17,8 +17,10 @@ export default function Onboarding() {
   const [followUpQ, setFollowUpQ] = useState('')
   const [followUpAnswer, setFollowUpAnswer] = useState('')
   const [bio, setBio] = useState('')
+  const [isEditingBio, setIsEditingBio] = useState(false)
   const [loading, setLoading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const bioRef = useRef<HTMLParagraphElement>(null)
   const router = useRouter()
 
   // Auto-resize textareas
@@ -128,7 +130,7 @@ export default function Onboarding() {
           cursor: not-allowed;
         }
         .onboarding-btn-finish {
-          padding: 0.75rem 1.5rem;
+          padding: 0.75rem 1.75rem;
           border-radius: 9999px;
           border: none;
           font-family: var(--font-sans);
@@ -154,16 +156,47 @@ export default function Onboarding() {
           opacity: 0.5;
           cursor: not-allowed;
         }
+
+        .bio-card-container {
+          position: relative;
+          width: 100%;
+          border-radius: 8px;
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          background: var(--color-surface-container-low);
+          border: 1px solid rgba(3, 33, 33, 0.12);
+        }
+        .bio-card-container:hover:not(.is-editing) {
+          background: var(--color-surface-container);
+          border-color: rgba(3, 33, 33, 0.2);
+        }
+        .bio-card-container.is-editing {
+          background: #ffffff;
+          border-color: var(--color-primary-container);
+          box-shadow: 0 0 0 3px rgba(3, 33, 33, 0.1), 0 8px 24px rgba(3, 33, 33, 0.06);
+        }
+        .bio-editable-text {
+          font-family: var(--font-serif);
+          font-size: 18px;
+          line-height: 28px;
+          color: var(--color-primary);
+          outline: none !important;
+          cursor: text;
+          min-height: 84px;
+        }
       `}</style>
 
       <div
-        className="min-h-screen flex flex-col items-center antialiased"
+        className="min-h-screen flex flex-col items-center justify-center antialiased"
         style={{ background: 'var(--color-background)', color: 'var(--color-on-background)' }}
       >
-        <main className="flex-1 w-full max-w-[720px] px-5 md:px-0 py-12 mx-auto flex flex-col justify-center">
+        <main className="w-full max-w-[680px] px-6 sm:px-8 py-8 sm:py-12 mx-auto flex flex-col">
 
         {/* Progress Indicator */}
-        <div className="w-full flex items-center justify-between mb-12 opacity-80">
+        <div className="w-full flex items-center justify-between mb-8 opacity-80">
           <span
             className="uppercase tracking-widest text-xs whitespace-nowrap"
             style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-on-surface-variant)', letterSpacing: '0.1em', fontWeight: 500, fontSize: '13px' }}
@@ -190,43 +223,43 @@ export default function Onboarding() {
           >
             <label
               htmlFor="onboarding-input"
-              className="block mb-6 leading-tight max-w-[600px]"
+              className="block mb-6 max-w-[620px]"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(32px, 4vw, 48px)',
+                fontSize: 'clamp(24px, 3.2vw, 32px)',
                 fontWeight: 600,
-                lineHeight: 1.15,
+                lineHeight: 1.3,
                 letterSpacing: '-0.02em',
                 color: 'var(--color-on-background)',
               }}
             >
-              What's something you've been reading, thinking about, or stuck on lately?
+              What&apos;s something you&apos;ve been reading, thinking about, or stuck on lately?
             </label>
 
-            <div className="relative mb-3">
+            <div className="relative mb-4">
               <textarea
                 ref={textareaRef}
                 id="onboarding-input"
-                className="w-full bg-transparent border-0 border-b px-0 py-4 resize-none focus:outline-none transition-colors"
+                className="w-full bg-transparent border-0 border-b px-0 py-3 resize-none focus:outline-none transition-colors"
                 style={{
                   borderBottomWidth: '1px',
                   borderColor: 'rgba(3,33,33,0.2)',
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  lineHeight: '28px',
+                  fontSize: '17px',
+                  lineHeight: '26px',
                   color: 'var(--color-on-background)',
                 }}
                 placeholder="Start typing your thoughts here..."
-                rows={3}
+                rows={2}
                 value={initialPrompt}
                 onChange={(e) => { setInitialPrompt(e.target.value); autoResize(e) }}
-                onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'rgba(3,33,33,0.6)' }}
+                onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'var(--color-primary)' }}
                 onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'rgba(3,33,33,0.2)' }}
               />
             </div>
 
             {/* Suggestion pills */}
-            <div className="flex flex-wrap gap-3 mb-12">
+            <div className="flex flex-wrap gap-2.5 mb-8">
               {SUGGESTIONS.map(s => (
                 <button
                   key={s}
@@ -237,7 +270,7 @@ export default function Onboarding() {
                     fontFamily: 'var(--font-sans)',
                     fontSize: '13px',
                     fontWeight: 500,
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.04em',
                     color: 'var(--color-on-surface-variant)',
                   }}
                   onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'var(--color-surface-container-low)' }}
@@ -249,7 +282,7 @@ export default function Onboarding() {
             </div>
 
             {/* Action */}
-            <div className="mt-auto flex justify-end pt-6">
+            <div className="flex justify-end pt-4">
               <button
                 onClick={handleStep1}
                 disabled={loading || !initialPrompt.trim()}
@@ -269,15 +302,15 @@ export default function Onboarding() {
             className="flex flex-col flex-1"
             style={{ animation: `${direction === 'forward' ? 'slideInRight' : 'slideInLeft'} 0.5s ease-out both` }}
           >
-            {/* AI-generated question as large display text */}
+            {/* AI-generated question as refined editorial display text */}
             <h1
-              className="mb-6 leading-tight max-w-[90%]"
+              className="mb-6 max-w-[640px]"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(32px, 4vw, 48px)',
+                fontSize: 'clamp(22px, 3vw, 28px)',
                 fontWeight: 600,
-                lineHeight: 1.15,
-                letterSpacing: '-0.02em',
+                lineHeight: 1.35,
+                letterSpacing: '-0.015em',
                 color: 'var(--color-primary)',
               }}
             >
@@ -285,7 +318,7 @@ export default function Onboarding() {
             </h1>
 
             {/* Response input */}
-            <div className="w-full relative group">
+            <div className="w-full relative group mb-4">
               <textarea
                 ref={textareaRef}
                 id="userResponse"
@@ -293,10 +326,10 @@ export default function Onboarding() {
                 style={{
                   borderColor: 'rgba(193,200,199,0.3)',
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  lineHeight: '28px',
+                  fontSize: '17px',
+                  lineHeight: '26px',
                   color: 'var(--color-on-surface)',
-                  minHeight: '150px',
+                  minHeight: '110px',
                 }}
                 placeholder="Reflect on your recent findings..."
                 value={followUpAnswer}
@@ -312,7 +345,7 @@ export default function Onboarding() {
             </div>
 
             {/* Action */}
-            <div className="mt-12 flex justify-end w-full">
+            <div className="flex justify-end pt-4 w-full">
               <button
                 onClick={handleStep2}
                 disabled={loading || !followUpAnswer.trim()}
@@ -329,17 +362,17 @@ export default function Onboarding() {
         {step === 3 && (
           <div
             key="step3"
-            className="flex flex-col gap-12 flex-1"
+            className="flex flex-col gap-6 flex-1"
             style={{ animation: `${direction === 'forward' ? 'slideInRight' : 'slideInLeft'} 0.5s ease-out both` }}
           >
             {/* Header */}
-            <header className="flex flex-col gap-3">
+            <header className="flex flex-col gap-2">
               <h1
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(32px, 4vw, 48px)',
+                  fontSize: 'clamp(24px, 3.2vw, 32px)',
                   fontWeight: 600,
-                  lineHeight: 1.15,
+                  lineHeight: 1.25,
                   letterSpacing: '-0.02em',
                   color: 'var(--color-primary)',
                 }}
@@ -349,8 +382,8 @@ export default function Onboarding() {
               <p
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  lineHeight: '28px',
+                  fontSize: '16px',
+                  lineHeight: '24px',
                   color: 'var(--color-on-surface-variant)',
                   maxWidth: '65ch',
                 }}
@@ -361,20 +394,19 @@ export default function Onboarding() {
 
             {/* Bio card */}
             <div
-              className="relative w-full rounded-lg p-6 flex flex-col gap-6 transition-all duration-300 ease-in-out group"
-              style={{
-                background: 'var(--color-surface-container-low)',
-                border: '1px solid rgba(3,33,33,0.1)',
+              className={`bio-card-container ${isEditingBio ? 'is-editing' : ''}`}
+              onClick={() => {
+                if (!isEditingBio && bioRef.current) {
+                  bioRef.current.focus()
+                }
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-container-high)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-container-low)' }}
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <span
                   className="uppercase tracking-wider"
                   style={{
                     fontFamily: 'var(--font-sans)',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: 500,
                     letterSpacing: '0.05em',
                     color: 'var(--color-outline)',
@@ -382,35 +414,62 @@ export default function Onboarding() {
                 >
                   AI Compiled Bio
                 </span>
+                {/* Secondary status or counter */}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '12px',
+                    color: 'var(--color-outline)',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {isEditingBio ? `${bio.length} characters` : 'Editable'}
+                </span>
               </div>
+
               <p
-                className="leading-relaxed"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  lineHeight: '28px',
-                  color: 'var(--color-primary)',
-                }}
+                ref={bioRef}
+                className="bio-editable-text leading-relaxed"
                 contentEditable
                 suppressContentEditableWarning
-                onBlur={(e) => setBio(e.currentTarget.textContent || bio)}
+                onFocus={() => setIsEditingBio(true)}
+                onBlur={(e) => {
+                  setIsEditingBio(false)
+                  setBio(e.currentTarget.textContent || bio)
+                }}
+                onInput={(e) => setBio((e.currentTarget as HTMLParagraphElement).textContent || '')}
               >
                 {bio}
               </p>
-              <div
-                className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '13px',
-                  color: 'var(--color-outline)',
-                }}
-              >
-                Click text to edit
+
+              <div className="flex justify-between items-center pt-1 border-t border-black/5">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '12px',
+                    color: 'var(--color-outline)',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {isEditingBio
+                    ? 'Editing bio • Click outside to save'
+                    : 'Click text to edit'}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '12px',
+                    color: isEditingBio ? 'var(--color-surface-tint)' : 'transparent',
+                    transition: 'color 0.2s ease',
+                  }}
+                >
+                  {isEditingBio ? '● Live editing' : ''}
+                </span>
               </div>
             </div>
 
             {/* Action */}
-            <div className="flex justify-end items-center gap-6 pt-6">
+            <div className="flex justify-end items-center gap-6 pt-2">
               <button
                 onClick={handleFinish}
                 disabled={loading}
@@ -426,11 +485,11 @@ export default function Onboarding() {
         {/* Slide transition animations */}
         <style>{`
           @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(40px); }
+            from { opacity: 0; transform: translateX(30px); }
             to   { opacity: 1; transform: translateX(0); }
           }
           @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-40px); }
+            from { opacity: 0; transform: translateX(-30px); }
             to   { opacity: 1; transform: translateX(0); }
           }
         `}</style>
@@ -438,3 +497,4 @@ export default function Onboarding() {
     </>
   )
 }
+
