@@ -53,10 +53,19 @@ body {
   overflow-x: hidden;
 }
 
+/* ─── Universal button reset ─── */
+button {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 /* ─── Component Classes ─── */
 .btn-primary {
   background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
+  color: var(--color-on-primary);
   padding: 1rem 2rem;
   border-radius: 0.25rem;
   font-family: var(--font-sans);
@@ -64,16 +73,24 @@ body {
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.02em;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border: none;
 }
 .btn-primary:hover {
-  opacity: 0.9;
+  background-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(3, 33, 33, 0.25);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(3, 33, 33, 0.2);
 }
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -87,11 +104,17 @@ body {
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.02em;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 .btn-secondary:hover {
-  background-color: var(--color-surface-variant);
+  background-color: var(--color-surface-container-high);
+  border-color: var(--color-outline);
+  box-shadow: 0 2px 12px rgba(3, 33, 33, 0.08);
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .input-underline {

@@ -95,11 +95,72 @@ export default function Onboarding() {
   const progressWidth = step === 1 ? '33%' : step === 2 ? '66%' : '100%'
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center antialiased"
-      style={{ background: 'var(--color-background)', color: 'var(--color-on-background)' }}
-    >
-      <main className="flex-1 w-full max-w-[720px] px-5 md:px-0 py-12 mx-auto flex flex-col justify-center">
+    <>
+      <style>{`
+        .onboarding-btn-primary {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 2rem;
+          border-radius: 0.25rem;
+          border: none;
+          font-family: var(--font-sans);
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          line-height: 20px;
+          background: var(--color-primary-container);
+          color: var(--color-on-primary);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .onboarding-btn-primary:hover:not(:disabled) {
+          background: var(--color-primary);
+          box-shadow: 0 4px 20px rgba(3, 33, 33, 0.25);
+          transform: translateY(-1px);
+        }
+        .onboarding-btn-primary:active:not(:disabled) {
+          transform: translateY(0) scale(0.98);
+          box-shadow: 0 2px 8px rgba(3, 33, 33, 0.2);
+        }
+        .onboarding-btn-primary:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .onboarding-btn-finish {
+          padding: 0.75rem 1.5rem;
+          border-radius: 9999px;
+          border: none;
+          font-family: var(--font-sans);
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          line-height: 20px;
+          background: var(--color-primary-container);
+          color: var(--color-surface-container-lowest);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .onboarding-btn-finish:hover:not(:disabled) {
+          background: var(--color-primary);
+          box-shadow: 0 4px 20px rgba(3, 33, 33, 0.25);
+          transform: translateY(-1px);
+        }
+        .onboarding-btn-finish:active:not(:disabled) {
+          transform: translateY(0) scale(0.98);
+          box-shadow: 0 2px 8px rgba(3, 33, 33, 0.2);
+        }
+        .onboarding-btn-finish:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>
+
+      <div
+        className="min-h-screen flex flex-col items-center antialiased"
+        style={{ background: 'var(--color-background)', color: 'var(--color-on-background)' }}
+      >
+        <main className="flex-1 w-full max-w-[720px] px-5 md:px-0 py-12 mx-auto flex flex-col justify-center">
 
         {/* Progress Indicator */}
         <div className="w-full flex items-center justify-between mb-12 opacity-80">
@@ -192,16 +253,7 @@ export default function Onboarding() {
               <button
                 onClick={handleStep1}
                 disabled={loading || !initialPrompt.trim()}
-                className="flex items-center gap-2 px-8 py-3 rounded transition-opacity group"
-                style={{
-                  background: 'var(--color-primary-container)',
-                  color: 'var(--color-on-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                  opacity: loading || !initialPrompt.trim() ? 0.5 : 1,
-                }}
+                className="onboarding-btn-primary group"
               >
                 {loading ? 'Thinking…' : 'Next'}
                 <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
@@ -264,16 +316,7 @@ export default function Onboarding() {
               <button
                 onClick={handleStep2}
                 disabled={loading || !followUpAnswer.trim()}
-                className="flex items-center gap-2 px-6 py-3 rounded transition-colors group"
-                style={{
-                  background: 'var(--color-primary-container)',
-                  color: 'var(--color-on-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                  opacity: loading || !followUpAnswer.trim() ? 0.5 : 1,
-                }}
+                className="onboarding-btn-primary group"
               >
                 {loading ? 'Compiling…' : 'Continue'}
                 <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
@@ -371,35 +414,27 @@ export default function Onboarding() {
               <button
                 onClick={handleFinish}
                 disabled={loading}
-                className="px-6 py-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                style={{
-                  background: 'var(--color-primary-container)',
-                  color: 'var(--color-surface-container-lowest)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                  opacity: loading ? 0.5 : 1,
-                }}
+                className="onboarding-btn-finish focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 {loading ? 'Saving…' : 'Looks good'}
               </button>
             </div>
           </div>
         )}
-      </main>
+        </main>
 
-      {/* Slide transition animations */}
-      <style>{`
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(40px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-40px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
-    </div>
+        {/* Slide transition animations */}
+        <style>{`
+          @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+          }
+          @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to   { opacity: 1; transform: translateX(0); }
+          }
+        `}</style>
+      </div>
+    </>
   )
 }
