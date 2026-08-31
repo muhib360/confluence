@@ -21,6 +21,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const bioRef = useRef<HTMLParagraphElement>(null)
+  const bioCardRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   // Auto-resize textareas
@@ -31,6 +32,39 @@ export default function Onboarding() {
       textareaRef.current.focus()
     }
   }, [step])
+
+  // Handle outside click & Escape key to unfocus bio editor
+  useEffect(() => {
+    if (!isEditingBio) return
+
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (bioCardRef.current && !bioCardRef.current.contains(e.target as Node)) {
+        if (bioRef.current) {
+          bioRef.current.blur()
+        }
+        setIsEditingBio(false)
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (bioRef.current) {
+          bioRef.current.blur()
+        }
+        setIsEditingBio(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('touchstart', handleOutsideClick)
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+      document.removeEventListener('touchstart', handleOutsideClick)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isEditingBio])
 
   const goTo = (nextStep: number) => {
     setDirection(nextStep > step ? 'forward' : 'back')
@@ -318,29 +352,25 @@ export default function Onboarding() {
             </h1>
 
             {/* Response input */}
-            <div className="w-full relative group mb-4">
+            <div className="relative mb-4">
               <textarea
                 ref={textareaRef}
                 id="userResponse"
-                className="w-full bg-transparent border-0 border-b-2 resize-none py-3 focus:outline-none transition-colors leading-relaxed"
+                className="w-full bg-transparent border-0 border-b px-0 py-3 resize-none focus:outline-none transition-colors leading-relaxed"
                 style={{
-                  borderColor: 'rgba(193,200,199,0.3)',
+                  borderBottomWidth: '1px',
+                  borderColor: 'rgba(3,33,33,0.2)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: '17px',
                   lineHeight: '26px',
-                  color: 'var(--color-on-surface)',
+                  color: 'var(--color-on-background)',
                   minHeight: '110px',
                 }}
                 placeholder="Reflect on your recent findings..."
                 value={followUpAnswer}
                 onChange={(e) => { setFollowUpAnswer(e.target.value); autoResize(e) }}
                 onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'var(--color-primary)' }}
-                onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'rgba(193,200,199,0.3)' }}
-              />
-              {/* Animated underline */}
-              <div
-                className="absolute bottom-0 left-0 h-[2px] w-0 transition-all duration-500 ease-out group-focus-within:w-full"
-                style={{ background: 'var(--color-primary)' }}
+                onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = 'rgba(3,33,33,0.2)' }}
               />
             </div>
 
@@ -394,6 +424,7 @@ export default function Onboarding() {
 
             {/* Bio card */}
             <div
+              ref={bioCardRef}
               className={`bio-card-container ${isEditingBio ? 'is-editing' : ''}`}
               onClick={() => {
                 if (!isEditingBio && bioRef.current) {
@@ -423,7 +454,7 @@ export default function Onboarding() {
                     letterSpacing: '0.02em',
                   }}
                 >
-                  {isEditingBio ? `${bio.length} characters` : 'Editable'}
+                  {isEditingBio ? `${bio.length} characters` : ''}
                 </span>
               </div>
 
@@ -436,6 +467,11 @@ export default function Onboarding() {
                 onBlur={(e) => {
                   setIsEditingBio(false)
                   setBio(e.currentTarget.textContent || bio)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    e.currentTarget.blur()
+                  }
                 }}
                 onInput={(e) => setBio((e.currentTarget as HTMLParagraphElement).textContent || '')}
               >
@@ -452,7 +488,7 @@ export default function Onboarding() {
                   }}
                 >
                   {isEditingBio
-                    ? 'Editing bio • Click outside to save'
+                    ? 'Editing bio • Press Esc or click outside to finish'
                     : 'Click text to edit'}
                 </span>
                 <span
