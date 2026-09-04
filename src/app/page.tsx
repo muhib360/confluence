@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col">
-      <header className="flex justify-between items-center mb-12 mt-6">
+      <header className="flex justify-between items-center mb-8 mt-4 sm:mt-6">
         <h1
           className="font-serif font-semibold text-2xl"
           style={{ color: 'var(--color-primary)' }}
@@ -64,7 +64,7 @@ export default function Home() {
         </button>
       </header>
 
-      <main className="mt-16 sm:mt-20 flex-1">
+      <main className={`flex-1 flex flex-col ${status === 'idle' ? 'mt-16 sm:mt-20' : 'items-center justify-center -mt-10 pb-16'}`}>
         {status === 'idle' && (
           <div className="fade-in-up">
             <h2
@@ -95,14 +95,14 @@ export default function Home() {
         )}
 
         {status === 'searching' && (
-          <div className="fade-in-up text-center mt-20">
+          <div className="fade-in-up text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
             <p className="font-serif text-lg sm:text-xl text-on-surface-variant">Searching for resonance on &quot;{topic}&quot;...</p>
           </div>
         )}
 
         {status === 'queued' && (
-          <div className="fade-in-up text-center mt-20">
+          <div className="fade-in-up text-center">
             <div className="w-14 h-14 bg-surface-container rounded-full mx-auto mb-6 flex items-center justify-center opacity-70">
                <span className="text-primary text-xl font-serif">...</span>
             </div>
