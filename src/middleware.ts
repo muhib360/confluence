@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in, but not onboarded, redirect to onboarding unless they are on it
-  if (user && !request.nextUrl.pathname.startsWith('/onboarding') && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api')) {
+  if (user && !request.nextUrl.pathname.startsWith('/onboarding') && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.startsWith('/settings')) {
       const { data: profile } = await supabase.from('profiles').select('bio').eq('id', user.id).single()
       if (!profile?.bio) {
           const url = request.nextUrl.clone()

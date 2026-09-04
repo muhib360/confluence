@@ -4,12 +4,15 @@ import { useEffect, useState, useRef, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+import ReportBlockModal from '@/components/ReportBlockModal'
+
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: matchId } = use(params)
   const [messages, setMessages] = useState<any[]>([])
   const [input, setInput] = useState('')
   const [userId, setUserId] = useState('')
   const [otherUser, setOtherUser] = useState<any>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -77,6 +80,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             </div>
           )}
         </div>
+        
+        {otherUser && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="text-on-surface-variant hover:text-primary transition-colors focus:outline-none p-2"
+          >
+            <span className="material-symbols-outlined text-[20px]">flag</span>
+          </button>
+        )}
       </header>
 
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -105,6 +117,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <button type="submit" disabled={!input.trim()} className="btn-primary rounded-full px-6 py-3">Send</button>
         </form>
       </footer>
+      
+      {otherUser && (
+        <ReportBlockModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          reportedUserId={otherUser.id}
+          matchId={matchId}
+        />
+      )}
     </div>
   )
 }

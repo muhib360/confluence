@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { use } from 'react'
 
+import ReportBlockModal from '@/components/ReportBlockModal'
+
 export default function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [match, setMatch] = useState<any>(null)
   const [otherUser, setOtherUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -48,7 +51,18 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-serif text-xl">Loading connection...</div>
 
   return (
-    <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-center">
+    <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-center relative">
+      <div className="absolute top-6 right-6">
+        {otherUser && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="text-on-surface-variant hover:text-primary transition-colors focus:outline-none p-2"
+          >
+            <span className="material-symbols-outlined text-[20px]">flag</span>
+          </button>
+        )}
+      </div>
+
       <div className="fade-in-up">
         <h2 className="font-serif text-[32px] font-semibold text-center mb-12 text-primary">A connection was found.</h2>
 
@@ -75,6 +89,15 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           <button onClick={handleAccept} className="btn-primary w-full sm:w-auto">Begin Conversation</button>
         </div>
       </div>
+      
+      {otherUser && (
+        <ReportBlockModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          reportedUserId={otherUser.id}
+          matchId={id}
+        />
+      )}
     </div>
   )
 }

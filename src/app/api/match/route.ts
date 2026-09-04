@@ -13,14 +13,26 @@ export async function POST(req: Request) {
         // Simulate search delay
         await new Promise(r => setTimeout(r, 1500));
 
-        // Find a match (for demo: pick any profile that isn't the user)
-        // In a real app, this would match based on embeddings or queues
+        // Fetch the user's blocked and blockers
+        const { data: blocks } = await supabase
+            .from('blocks')
+            .select('blocker_id, blocked_id')
+            .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+            
+        const excludedIds = new Set([user.id]);
+        if (blocks) {
+            blocks.forEach(block => {
+                excludedIds.add(block.blocker_id);
+                excludedIds.add(block.blocked_id);
+            });
+        }
+
+        // Find a match (excluding blocked/blockers)
         const { data: profiles } = await supabase
             .from('profiles')
             .select('id, bio')
-            .neq('id', user.id)
+            .not('id', 'in', `(${Array.from(excludedIds).join(',')})`)
             .limit(50);
-            
         if (!profiles || profiles.length === 0) {
             // Queue state
             await supabase.from('queues').insert({ user_id: user.id, topic, status: 'searching' });

@@ -36,11 +36,6 @@ export default function ProfilePage() {
     router.push('/')
   }
 
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
 
   if (loading) return <div className="min-h-screen p-6 font-serif flex items-center justify-center text-xl">Loading...</div>
 
@@ -48,7 +43,9 @@ export default function ProfilePage() {
     <div className="min-h-screen p-6 max-w-[720px] mx-auto">
       <header className="flex justify-between items-center mb-12 mt-6">
         <button onClick={() => router.push('/')} className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">← Back to Confluence</button>
-        <button onClick={handleLogout} className="font-sans text-xs uppercase tracking-widest text-on-surface-variant hover:text-error transition-colors">Log out</button>
+        <button onClick={() => router.push('/settings')} className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform flex items-center justify-center">
+          <span className="material-symbols-outlined text-[20px]">settings</span>
+        </button>
       </header>
 
       <main className="fade-in-up">
