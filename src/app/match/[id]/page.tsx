@@ -44,7 +44,19 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
   const handleAccept = async () => {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     await supabase.from('matches').update({ status: 'accepted' }).eq('id', id)
+
+    // Clean up any queue entries for this topic
+    if (user && topic) {
+      await supabase
+        .from('queues')
+        .update({ status: 'matched' })
+        .eq('user_id', user.id)
+        .eq('topic', topic)
+        .eq('status', 'searching')
+    }
+
     router.push(`/chat/${id}`)
   }
 
@@ -124,11 +136,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
             You&apos;re in the queue for &quot;{topic}&quot;. We&apos;ll notify you when someone new joins.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-            <button onClick={() => router.push('/')} className="btn-secondary w-full sm:w-auto min-w-[140px]">
-              Cancel Search
-            </button>
-            <button onClick={() => router.push('/')} className="btn-primary w-full sm:w-auto min-w-[140px]">
+          <div className="flex items-center justify-center mt-10">
+            <button onClick={() => router.push('/')} className="btn-primary w-full sm:w-auto min-w-[160px]">
               Back to Home
             </button>
           </div>

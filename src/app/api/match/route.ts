@@ -13,18 +13,23 @@ export async function POST(req: Request) {
         // Simulate search delay
         await new Promise(r => setTimeout(r, 1500));
 
-        // Fetch the user's blocked and blockers
-        const { data: blocks } = await supabase
-            .from('blocks')
-            .select('blocker_id, blocked_id')
-            .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
-            
         const excludedIds = new Set([user.id]);
-        if (blocks) {
-            blocks.forEach(block => {
-                excludedIds.add(block.blocker_id);
-                excludedIds.add(block.blocked_id);
-            });
+
+        // Fetch the user's blocked and blockers (gracefully handle if table doesn't exist)
+        try {
+            const { data: blocks } = await supabase
+                .from('blocks')
+                .select('blocker_id, blocked_id')
+                .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+
+            if (blocks) {
+                blocks.forEach(block => {
+                    excludedIds.add(block.blocker_id);
+                    excludedIds.add(block.blocked_id);
+                });
+            }
+        } catch {
+            // blocks table may not exist yet — skip gracefully
         }
 
         // Also exclude users from previously declined matches
@@ -40,14 +45,58 @@ export async function POST(req: Request) {
             });
         }
 
-        // Find a match (excluding blocked/blockers and declined)
+        // Also check if another user is queued for a similar topic — match them first
+        const { data: waitingQueues } = await supabase
+            .from('queues')
+            .select('*')
+            .eq('status', 'searching')
+            .neq('user_id', user.id)
+            .order('created_at', { ascending: true })
+            .limit(20);
+
+        if (waitingQueues && waitingQueues.length > 0) {
+            // Find a queued user who isn't excluded
+            const eligibleQueue = waitingQueues.find(q => !excludedIds.has(q.user_id));
+
+            if (eligibleQueue) {
+                // Generate context
+                const context = await generateMatchContext(topic);
+
+                // Create match between current user and the queued user
+                const { data: match, error } = await supabase
+                    .from('matches')
+                    .insert({
+                        user1_id: user.id,
+                        user2_id: eligibleQueue.user_id,
+                        topic,
+                        reasoning: context.reason,
+                        icebreaker: context.icebreaker,
+                        status: 'pending'
+                    })
+                    .select()
+                    .single();
+
+                if (!error && match) {
+                    // Mark the other user's queue entry as matched
+                    await supabase
+                        .from('queues')
+                        .update({ status: 'matched' })
+                        .eq('id', eligibleQueue.id);
+
+                    return NextResponse.json({ matchId: match.id });
+                }
+            }
+        }
+
+        // Find a match from profiles (excluding blocked/blockers and declined)
         const { data: profiles } = await supabase
             .from('profiles')
             .select('id, bio')
             .not('id', 'in', `(${Array.from(excludedIds).join(',')})`)
             .limit(50);
+
         if (!profiles || profiles.length === 0) {
-            // Queue state
+            // No profiles available — queue the user
             await supabase.from('queues').insert({ user_id: user.id, topic, status: 'searching' });
             return NextResponse.json({ queued: true });
         }
@@ -77,7 +126,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ matchId: match.id });
 
     } catch (error) {
-        console.error(error);
+        console.error('Match API error:', error);
         return NextResponse.json({ error: 'Match failed' }, { status: 500 });
     }
 }
