@@ -27,7 +27,20 @@ export async function POST(req: Request) {
             });
         }
 
-        // Find a match (excluding blocked/blockers)
+        // Also exclude users from previously declined matches
+        const { data: declinedMatches } = await supabase
+            .from('matches')
+            .select('user1_id, user2_id')
+            .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+            .eq('status', 'declined');
+
+        if (declinedMatches) {
+            declinedMatches.forEach(m => {
+                excludedIds.add(m.user1_id === user.id ? m.user2_id : m.user1_id);
+            });
+        }
+
+        // Find a match (excluding blocked/blockers and declined)
         const { data: profiles } = await supabase
             .from('profiles')
             .select('id, bio')

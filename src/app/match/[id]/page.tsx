@@ -7,12 +7,16 @@ import { use } from 'react'
 
 import ReportBlockModal from '@/components/ReportBlockModal'
 
+type PageStatus = 'viewing' | 'searching' | 'queued'
+
 export default function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [match, setMatch] = useState<any>(null)
   const [otherUser, setOtherUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [status, setStatus] = useState<PageStatus>('viewing')
+  const [topic, setTopic] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -27,6 +31,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
         return
       }
       setMatch(matchData)
+      setTopic(matchData.topic)
 
       const otherUserId = matchData.user1_id === user.id ? matchData.user2_id : matchData.user1_id
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', otherUserId).single()
@@ -43,12 +48,69 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   }
 
   const handleDecline = async () => {
+    // 1. Decline the current match
     const supabase = createClient()
     await supabase.from('matches').update({ status: 'declined' }).eq('id', id)
-    router.push('/')
+
+    // 2. Immediately re-attempt match with the same topic
+    setStatus('searching')
+
+    try {
+      const res = await fetch('/api/match', {
+        method: 'POST',
+        body: JSON.stringify({ topic }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const data = await res.json()
+
+      if (data.matchId) {
+        // Found a new match — navigate to it
+        router.replace(`/match/${data.matchId}`)
+      } else if (data.queued) {
+        // No one else available — show queued state inline
+        setStatus('queued')
+      }
+    } catch (err) {
+      console.error(err)
+      setStatus('queued')
+    }
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-serif text-xl">Loading connection...</div>
+
+  // Searching for next match after passing
+  if (status === 'searching') {
+    return (
+      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col items-center justify-center">
+        <div className="fade-in-up text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="font-serif text-lg sm:text-xl text-on-surface-variant">
+            Finding another match for &quot;{topic}&quot;...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // No more matches available — queued
+  if (status === 'queued') {
+    return (
+      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col items-center justify-center">
+        <div className="fade-in-up text-center">
+          <div className="w-14 h-14 bg-surface-container rounded-full mx-auto mb-6 flex items-center justify-center opacity-70">
+            <span className="text-primary text-xl font-serif">...</span>
+          </div>
+          <p className="font-serif text-lg sm:text-xl text-on-surface-variant mb-3">No more matches right now.</p>
+          <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
+            You&apos;re in the queue for &quot;{topic}&quot;. We&apos;ll notify you when someone new joins.
+          </p>
+          <button onClick={() => router.push('/')} className="btn-secondary mt-10">
+            Back to Home
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-center relative">
