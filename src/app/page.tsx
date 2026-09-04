@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Home() {
   const [topic, setTopic] = useState('')
@@ -36,12 +37,19 @@ export default function Home() {
   return (
     <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col">
       <header className="flex justify-between items-center mb-8 mt-4 sm:mt-6">
-        <h1
-          className="font-serif font-semibold text-2xl"
+        <Link
+          href="/"
+          onClick={(e) => {
+            if (status !== 'idle') {
+              setStatus('idle')
+              setTopic('')
+            }
+          }}
+          className="font-serif font-semibold text-2xl tracking-tight transition-opacity hover:opacity-80"
           style={{ color: 'var(--color-primary)' }}
         >
           Confluence
-        </h1>
+        </Link>
         <button
           onClick={() => router.push('/profile')}
           aria-label="Profile"
@@ -108,9 +116,23 @@ export default function Home() {
             </div>
             <p className="font-serif text-lg sm:text-xl text-on-surface-variant mb-3">No immediate match found.</p>
             <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">You are in the queue for &quot;{topic}&quot;. We will notify you when someone joins.</p>
-            <button onClick={() => setStatus('idle')} className="btn-secondary mt-10">
-              Cancel Search
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+              <button 
+                onClick={() => setStatus('idle')} 
+                className="btn-secondary w-full sm:w-auto min-w-[140px]"
+              >
+                Cancel Search
+              </button>
+              <button 
+                onClick={() => {
+                  setStatus('idle')
+                  setTopic('')
+                }} 
+                className="btn-primary w-full sm:w-auto min-w-[140px]"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         )}
       </main>

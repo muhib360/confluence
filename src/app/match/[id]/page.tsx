@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { use } from 'react'
 
@@ -81,13 +82,23 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   // Searching for next match after passing
   if (status === 'searching') {
     return (
-      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col items-center justify-center">
-        <div className="fade-in-up text-center">
+      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-between">
+        <header className="flex justify-between items-center mt-4 sm:mt-6">
+          <Link
+            href="/"
+            className="font-serif font-semibold text-2xl tracking-tight transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Confluence
+          </Link>
+        </header>
+        <div className="fade-in-up text-center my-auto py-12">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
           <p className="font-serif text-lg sm:text-xl text-on-surface-variant">
             Finding another match for &quot;{topic}&quot;...
           </p>
         </div>
+        <div className="h-8"></div>
       </div>
     )
   }
@@ -95,8 +106,17 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   // No more matches available — queued
   if (status === 'queued') {
     return (
-      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col items-center justify-center">
-        <div className="fade-in-up text-center">
+      <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-between">
+        <header className="flex justify-between items-center mt-4 sm:mt-6">
+          <Link
+            href="/"
+            className="font-serif font-semibold text-2xl tracking-tight transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Confluence
+          </Link>
+        </header>
+        <div className="fade-in-up text-center my-auto py-12">
           <div className="w-14 h-14 bg-surface-container rounded-full mx-auto mb-6 flex items-center justify-center opacity-70">
             <span className="text-primary text-xl font-serif">...</span>
           </div>
@@ -104,28 +124,43 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
             You&apos;re in the queue for &quot;{topic}&quot;. We&apos;ll notify you when someone new joins.
           </p>
-          <button onClick={() => router.push('/')} className="btn-secondary mt-10">
-            Back to Home
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+            <button onClick={() => router.push('/')} className="btn-secondary w-full sm:w-auto min-w-[140px]">
+              Cancel Search
+            </button>
+            <button onClick={() => router.push('/')} className="btn-primary w-full sm:w-auto min-w-[140px]">
+              Back to Home
+            </button>
+          </div>
         </div>
+        <div className="h-8"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-center relative">
-      <div className="absolute top-6 right-6">
+    <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col justify-between">
+      <header className="flex justify-between items-center mt-4 sm:mt-6 mb-8">
+        <Link
+          href="/"
+          className="font-serif font-semibold text-2xl tracking-tight transition-opacity hover:opacity-80"
+          style={{ color: 'var(--color-primary)' }}
+        >
+          Confluence
+        </Link>
         {otherUser && (
           <button 
             onClick={() => setIsModalOpen(true)}
+            aria-label="Report or block user"
+            title="Report or block user"
             className="text-on-surface-variant hover:text-primary transition-colors focus:outline-none p-2"
           >
             <span className="material-symbols-outlined text-[20px]">flag</span>
           </button>
         )}
-      </div>
+      </header>
 
-      <div className="fade-in-up">
+      <div className="fade-in-up my-auto py-6">
         <h2 className="font-serif text-[32px] font-semibold text-center mb-12 text-primary">A connection was found.</h2>
 
         <div className="card mb-8 text-center bg-surface-container border-none shadow-sm">

@@ -118,7 +118,7 @@ export default function SettingsPage() {
             <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
             <span className="font-sans font-medium text-sm">Back</span>
           </button>
-          <div className="font-serif font-semibold text-3xl md:text-5xl text-primary tracking-tight">Confluence</div>
+          <Link href="/" className="font-serif font-semibold text-3xl md:text-5xl text-primary tracking-tight hover:opacity-80 transition-opacity">Confluence</Link>
           <div className="flex gap-4">
             <Link href="/profile" className="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity cursor-pointer">account_circle</Link>
           </div>
