@@ -35,8 +35,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen p-6 max-w-[720px] mx-auto flex flex-col">
-      <header className="flex justify-between items-center mb-8 mt-4 sm:mt-6">
+    <div className="min-h-screen flex flex-col">
+      <header
+        className="flex justify-between items-center px-6 sm:px-10 py-4"
+        style={{ borderBottom: '1px solid var(--color-outline-variant)' }}
+      >
         <Link
           href="/"
           onClick={(e) => {
@@ -50,29 +53,58 @@ export default function Home() {
         >
           Confluence
         </Link>
-        <button
-          onClick={() => router.push('/profile')}
-          aria-label="Profile"
-          title="Profile"
-          className="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant/60 hover:border-primary hover:bg-surface-container text-on-surface hover:text-primary transition-all"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="flex items-center gap-3">
+          <Link
+            href="/chats"
+            className="flex items-center gap-2 px-3 py-1.5 rounded font-sans text-[13px] font-medium tracking-wide text-on-surface-variant hover:text-primary transition-colors"
           >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+            <span className="uppercase tracking-widest">Chats</span>
+            <span
+              className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold"
+              style={{
+                backgroundColor: 'var(--color-primary-container)',
+                color: 'var(--color-on-primary)',
+              }}
+            >
+              0
+            </span>
+          </Link>
+          <button
+            onClick={() => router.push('/profile')}
+            aria-label="Profile"
+            title="Profile"
+            className="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant/60 hover:border-primary hover:bg-surface-container text-on-surface hover:text-primary transition-all"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <main className={`flex-1 flex flex-col ${status === 'idle' ? 'mt-16 sm:mt-20' : 'items-center justify-center -mt-10 pb-16'}`}>
+      <main className={`flex-1 flex flex-col p-6 max-w-[720px] mx-auto w-full ${status === 'idle' ? 'mt-16 sm:mt-20' : 'items-center justify-center -mt-10 pb-16'}`}>
         {status === 'idle' && (
           <div className="fade-in-up">
             <h2
@@ -116,19 +148,13 @@ export default function Home() {
             </div>
             <p className="font-serif text-lg sm:text-xl text-on-surface-variant mb-3">No immediate match found.</p>
             <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">You are in the queue for &quot;{topic}&quot;. We will notify you when someone joins.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-              <button 
-                onClick={() => setStatus('idle')} 
-                className="btn-secondary w-full sm:w-auto min-w-[140px]"
-              >
-                Cancel Search
-              </button>
+            <div className="flex items-center justify-center mt-10">
               <button 
                 onClick={() => {
                   setStatus('idle')
                   setTopic('')
                 }} 
-                className="btn-primary w-full sm:w-auto min-w-[140px]"
+                className="btn-primary w-full sm:w-auto min-w-[160px]"
               >
                 Back to Home
               </button>
